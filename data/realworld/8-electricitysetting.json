@@ -1,0 +1,78 @@
+{
+  "connect_threshold": 200,
+  "miniradius": 100,
+  "unitlengthcosts": {
+    "2.5": 10,
+    "4": 10,
+    "6": 10,
+    "in_groove_conduit": 10,
+    "through_wall_conduit": 210,
+    "conduit": 10
+  },
+  "circuit": {
+    "normal": {
+      "objId": [
+        246082,
+        246371,
+        246739,
+        246826,
+        246989,
+        247105,
+        247333,
+        247610,
+        247794,
+        247883
+      ],
+      "wires": {
+        "earth": 2.5,
+        "live": 2.5,
+        "neutral": 2.5
+      }
+    },
+    "kitchen": {
+      "objId": [
+        244233,
+        244316
+      ],
+      "wires": {
+        "earth": 2.5,
+        "live": 4,
+        "neutral": 4
+      }
+    },
+    "bathroom": {
+      "objId": [
+        245385,
+        245484
+      ],
+      "wires": {
+        "earth": 2.5,
+        "live": 2.5,
+        "neutral": 2.5
+      }
+    },
+    "aircondition_livingroom": {
+      "objId": [
+        239634,
+        240525
+      ],
+      "wires": {
+        "earth": 2.5,
+        "live": 4,
+        "neutral": 4
+      }
+    },
+    "aircondition_bedroom": {
+      "objId": [
+        240742,
+        241116
+      ],
+      "wires": {
+        "earth": 2.5,
+        "live": 4,
+        "neutral": 4
+      }
+    }
+  },
+  "offset_door": 100
+}

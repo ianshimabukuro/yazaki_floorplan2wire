@@ -1,0 +1,63 @@
+{
+  "connect_threshold": 200,
+  "miniradius": 30,
+  "unitlengthcosts": {
+    "2.5": 10,
+    "4": 10,
+    "6": 10,
+    "in_groove_conduit": 10,
+    "through_wall_conduit": 210,
+    "conduit": 10
+  },
+  "circuit": {
+    "normal": {
+      "objId": [
+        291463,
+        291660,
+        291714,
+        291788,
+        291834,
+        291886,
+        292114,
+        292170,
+        292210,
+        292250,
+        292291,
+        292333,
+        292375,
+        292414,
+        292459,
+        292511,
+        292554
+      ],
+      "wires": {
+        "earth": 2.5,
+        "live": 2.5,
+        "neutral": 2.5
+      }
+    },
+    "chufang14": {
+      "objId": [
+        291943,
+        291995,
+        292034
+      ],
+      "wires": {
+        "earth": 2.5,
+        "live": 2.5,
+        "neutral": 2.5
+      }
+    },
+    "weishengjian15": {
+      "objId": [
+        292070
+      ],
+      "wires": {
+        "earth": 2.5,
+        "live": 2.5,
+        "neutral": 2.5
+      }
+    }
+  },
+  "offset_door": 100
+}
