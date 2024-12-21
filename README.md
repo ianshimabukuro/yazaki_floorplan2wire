@@ -32,6 +32,13 @@ cmake --build . --config Release
 ```
 This would compile the EWD library and its python interface using SWIG.
 
+Now we need to download the required packages.
+For that we first create a virtual environment, activate it, then run pip to install the packages into the venv:
+```
+python -m venv venv
+.\venv\Scripts\activate
+pip -m install requirements.txt
+```
 Now go to the 'python' folder at the root of the project.
 ```
 cd ../python
