@@ -37,7 +37,7 @@ For that we first create a virtual environment, activate it, then run pip to ins
 ```
 python -m venv venv
 .\venv\Scripts\activate
-pip -m install requirements.txt
+pip install -r requirements.txt
 ```
 Now go to the 'python' folder at the root of the project.
 ```
