@@ -15,8 +15,13 @@ EWD is a project that aims to provide a simple and easy-to-use tool for electric
 ## Compilation
 
 EWD uses CMake as build system, and requires at least version 3.14. 
-First setup a build folder and call CMake as follows
+First, clone this repo:
 ```
+git clone https://github.com/ianshimabukuro/EWD_yazaki
+```
+Then setup a build folder inside the local folder and call CMake as follows:
+```
+cd EWD_yazaki
 mkdir build
 cd build
 cmake .. -T host=x64 -A x64
