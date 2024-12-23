@@ -1,5 +1,5 @@
 from methods import *
-import matplotlib.pyplot as plt 
+from visualization import *
 
 if __name__ == '__main__':
     instanceno = 0
@@ -33,8 +33,14 @@ if __name__ == '__main__':
         da.PSB = gc.PSB_index
         da.devices = gc.devices_indices
         da.solve()
-        print(f'instance {instanceno}, circuit {cir}, devices = {len(devices_subset)+1}, cost = {da.obj.first :.2f}, bend = {da.obj.second}')
+        #print(f'instance {instanceno}, circuit {cir}, devices = {len(devices_subset)+1}, cost = {da.obj.first :.2f}, bend = {da.obj.second}')
+        #plot_house_layout(gc)
+        #python realworld.py
         
+        
+
+    
+
         # # Gurobi
         # from gurobi_solve import grb_solve
         # grb_solve(gc.g, [gc.PSB_index]+devices_subset)
@@ -42,6 +48,6 @@ if __name__ == '__main__':
         # # Cplex
         # from cplex_solve import cpl_solve
         # cpl_solve(gc.g, [gc.PSB_index]+devices_subset)
-            
-            
+    visualize_building_layout(gc, walls,PSB,devices,doors)
+    
     
