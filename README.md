@@ -17,11 +17,11 @@ EWD is a project that aims to provide a simple and easy-to-use tool for electric
 EWD uses CMake as build system, and requires at least version 3.14. 
 First, clone this repo:
 ```
-git clone https://github.com/ianshimabukuro/EWD_yazaki
+git clone https://github.com/ianshimabukuro/yazaki_floorplan2wire
 ```
 Then setup a build folder inside the local folder and call CMake as follows:
 ```
-cd EWD_yazaki
+cd yazaki_floorplan2wire
 mkdir build
 cd build
 cmake .. -T host=x64 -A x64
