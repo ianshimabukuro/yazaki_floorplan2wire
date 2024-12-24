@@ -1,8 +1,10 @@
 from methods import *
 from visualization import *
+import plotly.graph_objects as go
+import plotly.colors as pc
 
 if __name__ == '__main__':
-    instanceno = 0
+    instanceno = 2
     fileloader = RevitJsonLoader(f"../data/realworld/{instanceno}-ElecInfo.json")
     configloader = ConfigLoader(f"../data/realworld/{instanceno}-electricitysetting.json")
     walls = fileloader.get_walls()
@@ -11,7 +13,13 @@ if __name__ == '__main__':
     doors = fileloader.get_doors()
     circuits = configloader.get_circuits()
     circuits = sorted(circuits)
-    for cir in circuits:
+    fig = go.Figure()
+    fig_add_full_structure(fig,walls,PSB,doors,devices)
+    x_center,y_center,z_center,max_range = get_axis_boundaries(walls,devices,PSB,doors)
+    circuit_colors = pc.qualitative.Plotly
+    num_colors = len(circuit_colors)
+
+    for idx, cir in enumerate(circuits):
         devices_id = configloader.get_circuit_devices(cir)
         config = configloader.get_circuits_config(cir)
         config.floor_height = fileloader.get_floor_height()
@@ -33,14 +41,9 @@ if __name__ == '__main__':
         da.PSB = gc.PSB_index
         da.devices = gc.devices_indices
         da.solve()
-        #print(f'instance {instanceno}, circuit {cir}, devices = {len(devices_subset)+1}, cost = {da.obj.first :.2f}, bend = {da.obj.second}')
-        #plot_house_layout(gc)
-        #python realworld.py
+        fig_add_paths(fig, gc, da.paths, circuit_colors[idx % num_colors])
         
-        
-
-    
-
+        print(f'instance {instanceno}, circuit {cir}, devices = {len(devices_subset)+1}, cost = {da.obj.first :.2f}, bend = {da.obj.second}')
         # # Gurobi
         # from gurobi_solve import grb_solve
         # grb_solve(gc.g, [gc.PSB_index]+devices_subset)
@@ -48,6 +51,19 @@ if __name__ == '__main__':
         # # Cplex
         # from cplex_solve import cpl_solve
         # cpl_solve(gc.g, [gc.PSB_index]+devices_subset)
-    visualize_building_layout(gc, walls,PSB,devices,doors)
     
+    fig.update_layout(
+        title="Building Layout Visualization",
+        scene=dict(
+            xaxis=dict(range=[x_center - max_range / 2, x_center + max_range / 2]),
+            yaxis=dict(range=[y_center - max_range / 2, y_center + max_range / 2]),
+            zaxis=dict(range=[z_center - max_range / 2, z_center + max_range / 2]),
+            aspectmode='manual',
+            aspectratio=dict(x=1, y=1, z=1)  # Force 1:1:1 scaling for all axes
+        ),
+        legend=dict(x=0, y=1)
+    )
     
+    fig.write_html("building_layout.html")
+    # Show the plot
+    fig.show()
