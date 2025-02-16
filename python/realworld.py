@@ -36,10 +36,6 @@ if __name__ == '__main__':
         
         for wl in walls:
             gc.add_wall(wl)
-        G, positions = graphconstructor_to_networkx(gc)
-
-        # Plot in 3D using Plotly
-        plot_3d_network(G, positions)
         gc.set_PSB(PSB)
         for door in doors:
             gc.add_door(door)

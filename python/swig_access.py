@@ -22,7 +22,6 @@ def graphconstructor_to_networkx(graph):
     return G, positions
 
 def plot_3d_network(G, positions):
-    """ Plots a 3D NetworkX graph using Plotly. """
     
     # Extract node positions
     x_nodes = [positions[node][0] for node in G.nodes()]
