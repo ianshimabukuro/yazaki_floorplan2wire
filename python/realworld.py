@@ -2,17 +2,24 @@ from methods import *
 from visualization import *
 import plotly.graph_objects as go
 import plotly.colors as pc
+from swig_access import *
 
 if __name__ == '__main__':
+    
     instanceno = 2
-    fileloader = RevitJsonLoader(f"../data/realworld/{instanceno}-ElecInfo.json")
-    configloader = ConfigLoader(f"../data/realworld/{instanceno}-electricitysetting.json")
-    walls = fileloader.get_walls()
+    fileloader = RevitJsonLoader(f"data/realworld/{instanceno}-ElecInfo.json")
+    configloader = ConfigLoader(f"data/realworld/{instanceno}-electricitysetting.json")
+    # Load information into lists
+    walls = fileloader.get_walls() # Example, assuming at least one wall exists
     PSB = fileloader.get_PSB()
     devices = fileloader.get_devices()
     doors = fileloader.get_doors()
-    circuits = configloader.get_circuits()
+    circuits = configloader.get_circuits() 
     circuits = sorted(circuits)
+    
+
+
+    # Initialize Visualization 
     fig = go.Figure()
     fig_add_full_structure(fig,walls,PSB,doors,devices)
     x_center,y_center,z_center,max_range = get_axis_boundaries(walls,devices,PSB,doors)
@@ -26,18 +33,31 @@ if __name__ == '__main__':
         devices_subset = [dev for dev in devices if dev.id in devices_id]
         
         gc = GraphConstructor()
+        
         for wl in walls:
             gc.add_wall(wl)
+        G, positions = graphconstructor_to_networkx(gc)
+
+        # Plot in 3D using Plotly
+        plot_3d_network(G, positions)
         gc.set_PSB(PSB)
         for door in doors:
             gc.add_door(door)
         for dev in devices_subset:
             gc.add_device(dev)
         gc.read_config(config)
-        gc.construct() 
+        gc.construct()
+        #print graph 
         
+        # Convert GraphConstructor to NetworkX
+        G, positions = graphconstructor_to_networkx(gc)
+
+        # Plot in 3D using Plotly
+        plot_3d_network(G, positions)
+
+
         # Ours
-        da = DecompositionApproach(gc.g)
+        da = DecompositionApproach(gc.g) #Wtf is this
         da.PSB = gc.PSB_index
         da.devices = gc.devices_indices
         da.solve()
@@ -52,6 +72,8 @@ if __name__ == '__main__':
         # from cplex_solve import cpl_solve
         # cpl_solve(gc.g, [gc.PSB_index]+devices_subset)
     
+
+    #Also plotly
     fig.update_layout(
         title="Building Layout Visualization",
         scene=dict(
