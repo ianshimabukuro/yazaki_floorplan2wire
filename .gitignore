@@ -6,3 +6,4 @@ bin/
 python/EWDpy.py
 python/__pycache__/
 python/*.exe
+python/building_layout.html
