@@ -6,14 +6,21 @@ from swig_access import *
 
 if __name__ == '__main__':
     
-    instanceno = 2
+    instanceno = 5
     fileloader = RevitJsonLoader(f"data/realworld/{instanceno}-ElecInfo.json")
     configloader = ConfigLoader(f"data/realworld/{instanceno}-electricitysetting.json")
     # Load information into lists
+    
     walls = fileloader.get_walls() # Example, assuming at least one wall exists
     PSB = fileloader.get_PSB()
     devices = fileloader.get_devices()
     doors = fileloader.get_doors()
+
+    #Circuits created by their room ID
+    cirs = fileloader.get_devices_per_room()
+    #Substitute the circuit in the data pulled from the JSON electricity setting
+    configloader.substitute_circuit(cirs)
+
     circuits = configloader.get_circuits() 
     circuits = sorted(circuits)
     
@@ -49,7 +56,7 @@ if __name__ == '__main__':
         G, positions = graphconstructor_to_networkx(gc)
 
         # Plot in 3D using Plotly
-        plot_3d_network(G, positions)
+        #plot_3d_network(G, positions)
 
 
         # Ours
