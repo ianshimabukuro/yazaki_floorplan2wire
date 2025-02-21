@@ -581,13 +581,16 @@ namespace ewd
 	void GraphConstructor::Hanan(const vector<double>& xs, const vector<double>& ys, const vector<double>& zs)
 	{
 		int nx = xs.size(), ny = ys.size(), nz = zs.size();
+		
 		for(int k=0;k<nz;k++)
 		{
 			for(int j=0;j<ny;j++)
 			{
 				for(int i=0;i<nx;i++)
-				{
+				{ 
+					
 					size_t pnt = g.add_vertex_simply(Point(xs[i], ys[j], zs[k]));
+					
 					if(i>0)
 					{
 						add_edge(pnt, (i-1)+nx*j+nx*ny*k);	

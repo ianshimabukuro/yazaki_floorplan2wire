@@ -89,7 +89,7 @@ def fig_add_devices(fig,devices):
             marker=dict(color='green', size=3),
             name='Device'
         ))
-    
+
 
 def fig_add_doors(fig,doors):
     # Plot Doors
