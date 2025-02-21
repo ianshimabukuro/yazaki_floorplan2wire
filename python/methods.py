@@ -2,6 +2,7 @@ from EWDpy import *
 import json 
 from os.path import join
 from os import listdir
+from tqdm import tqdm
 
 def ft2mm(x):
     return x*304.8
@@ -9,11 +10,33 @@ def ft2mm(x):
 def pointxyz(dat)->Point:
     return Point(dat['X'], dat['Y'], dat['Z'])
 
+def explore_dict(d, indent=0):
+    """Recursively print the structure of a dictionary and count elements."""
+    count = 0  # Initialize the count for this level of recursion
+
+    if isinstance(d, dict):
+        for key, value in d.items():
+            print("  " * indent + f"- {key} ({type(value).__name__})")
+            count += explore_dict(value, indent + 1)  # Recursively count elements
+    elif isinstance(d, list):
+        print("  " * indent + f"- List with {len(d)} items")
+        for item in d:
+            count += explore_dict(item, indent + 1)  # Count each item in the list
+    else:
+        print("  " * indent + f"- {type(d).__name__}")
+        count += 1  # Increment count when hitting a base element
+
+    return count
+
+# Example
+
 class RevitJsonLoader(object):
     
     def __init__(self,filename) -> None:
         self.data = self.parse_file(filename)
-        
+
+
+    #turn JSON into dictionary    
     def parse_file(self,filename): 
         try:
             with open(filename,'r') as f:
@@ -22,6 +45,9 @@ class RevitJsonLoader(object):
             with open(filename, 'r', encoding='utf8') as f:
                 data = json.load(f)
         self.transform_mm(data)
+        #count = explore_dict(data)
+        #print(count)
+        print("JSON file has been properly loaded!")
         return data
             
         
@@ -58,32 +84,34 @@ class RevitJsonLoader(object):
     def get_walls(self):
         walljson = self.data['Item1']
         walls = []
-        for item in walljson:
+        for item in tqdm(walljson, desc="Processing walls", unit="item"):
             name = str(item['Name'])
             p0 = pointxyz(item['Vertexes'][0])
             p1 = pointxyz(item['Vertexes'][1])
             p4 = pointxyz(item['Vertexes'][4])
             ps = pointxyz(item['LocationCurve'][0])
             pe = pointxyz(item['LocationCurve'][1])
-            t=BarrierType_WALL
-            # if "承重" in name:
-            #     t=BarrierType_BEARING
+            t = BarrierType_WALL
+            
             if "梁" in name or "beam" in name.lower():
-                t=BarrierType_BEAM
+                t = BarrierType_BEAM
+                
             walls.append(
-                Wall(name, str(item['Id']), ps, pe, p0.distance(p4), p0.distance(p1),t))
+                Wall(name, str(item['Id']), ps, pe, p0.distance(p4), p0.distance(p1), t)
+            )
         return walls
     
     def get_PSB(self):
         for b in self.data['Item5']:
             if "强电" in b['Name']:
+                print('Fetched Electrical Panel Information')
                 return Device(str(b['Id']), str(b['Name']), pointxyz(b['Point']), str(b['Host_Id']))
-        return None
+        raise ValueError('Could not find Electrical Panel information')
 
     def get_devices(self):
         devices = []
         devjson = self.data['Item4']
-        for item in devjson:
+        for item in tqdm(devjson, desc = 'Processing Devices', unit = 'device'):
             devices.append(Device(str(item['Id']), str(item['Name']), pointxyz(item['Point']), str(item['Host_Id'])))
         return devices 
     
@@ -91,7 +119,7 @@ class RevitJsonLoader(object):
         doors = []
         doorjson = self.data['Item7']
         walljson = self.data['Item1']
-        for item in doorjson:
+        for item in tqdm(doorjson, desc = "Processing Doors", unit = 'Door'):
             host_id = item['Host_Id']
             wl = None 
             for wallitem in walljson:
@@ -107,6 +135,36 @@ class RevitJsonLoader(object):
             )
         return doors
     
+    def get_devices_per_room(self):
+        rooms = self.data['Item6']
+
+        # Dictionary to map room IDs to names
+        room_id_to_name = {room['Id']: room['Name'] for room in rooms}
+
+        devices_by_room = {}
+        devices = self.data['Item4']
+        for device in devices:
+            room_id = device['Room_Id']
+            print(room_id)
+            device_id = device['Id']
+
+            room_name = room_id_to_name[room_id]
+            print(room_name)
+
+            if room_name not in devices_by_room:
+                devices_by_room[room_name] = {
+                    "objId": [],
+                    "wires": {
+                        "earth": 2.5,
+                        "live": 2.5,
+                        "neutral": 2.5
+                    }
+                }
+            devices_by_room[room_name]["objId"].append(device_id)
+           
+        return devices_by_room
+
+
     def get_floor_height(self):
         return self.data['Rest']['Item2']['floorheight']
         
@@ -123,6 +181,9 @@ class ConfigLoader(object):
             with open(filename, 'r',encoding='utf8') as f:
                 data = json.load(f)
         return data 
+    
+    def substitute_circuit(self,circuits):
+        self.data['circuit'] = circuits
     
     def unit_cost(self, key):
         key = str(key)
