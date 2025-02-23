@@ -15,7 +15,6 @@ namespace ewd
         std::vector<size_t> devices;
         std::vector<std::vector<size_t>> paths;
         CostBend obj;
-
-        void solve();
+        void solve(bool use_mst = true);
     };
 }

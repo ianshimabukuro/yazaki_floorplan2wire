@@ -58,12 +58,14 @@ if __name__ == '__main__':
         # Plot in 3D using Plotly
         #plot_3d_network(G, positions)
 
-
+        print('this is gc.psb',gc.PSB_index)
         # Ours
         da = DecompositionApproach(gc.g) #Wtf is this
+
+
         da.PSB = gc.PSB_index
         da.devices = gc.devices_indices
-        da.solve()
+        da.solve(use_mst = True)
         fig_add_paths(fig, gc, da.paths, circuit_colors[idx % num_colors])
         
         print(f'instance {instanceno}, circuit {cir}, devices = {len(devices_subset)+1}, cost = {da.obj.first :.2f}, bend = {da.obj.second}')
