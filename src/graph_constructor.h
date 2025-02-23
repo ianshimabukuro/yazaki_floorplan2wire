@@ -20,6 +20,7 @@ namespace ewd
 		Point location;	// 位置
 		string attach_wall_id; // 附着墙ID
 		string name;  // 设备类型
+        string room_id;
 
         Device() {}
         /**
@@ -30,8 +31,8 @@ namespace ewd
          * @param location 
          * @param attach_wall_id 
          */
-        Device(string id, string name, Point location, string attach_wall_id) :
-            id(id), name(name), location(location), attach_wall_id(attach_wall_id){
+        Device(string id, string name, Point location, string attach_wall_id, string room_id) :
+            id(id), name(name), location(location), attach_wall_id(attach_wall_id), room_id(room_id){
         }
         ~Device() {}
 	};

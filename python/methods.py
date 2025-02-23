@@ -105,14 +105,18 @@ class RevitJsonLoader(object):
         for b in self.data['Item5']:
             if "强电" in b['Name']:
                 print('Fetched Electrical Panel Information')
-                return Device(str(b['Id']), str(b['Name']), pointxyz(b['Point']), str(b['Host_Id']))
+                return Device(str(b['Id']), str(b['Name']), pointxyz(b['Point']), str(b['Host_Id']),str(b['Room_Id']))
         raise ValueError('Could not find Electrical Panel information')
 
     def get_devices(self):
         devices = []
         devjson = self.data['Item4']
+        #add junction boxes
+    
+        #add regular devices
         for item in tqdm(devjson, desc = 'Processing Devices', unit = 'device'):
-            devices.append(Device(str(item['Id']), str(item['Name']), pointxyz(item['Point']), str(item['Host_Id'])))
+            print(str(item['Room_Id']),str(item['Name']))
+            devices.append(Device(str(item['Id']), str(item['Name']), pointxyz(item['Point']), str(item['Host_Id']),str(item['Room_Id'])))
         return devices 
     
     def get_doors(self):
@@ -135,21 +139,20 @@ class RevitJsonLoader(object):
             )
         return doors
     
-    def get_devices_per_room(self):
+    def get_devices_per_room(self, devices):
         rooms = self.data['Item6']
-
+        #Correct, using the name of the device instead of the room
         # Dictionary to map room IDs to names
         room_id_to_name = {room['Id']: room['Name'] for room in rooms}
-
+        #print(devices)
         devices_by_room = {}
-        devices = self.data['Item4']
         for device in devices:
-            room_id = device['Room_Id']
-            print(room_id)
-            device_id = device['Id']
+            room_id = device.room_id
+            #print(room_id)
+            device_id = device.id
 
-            room_name = room_id_to_name[room_id]
-            print(room_name)
+            room_name = device.name
+            #print(room_name)
 
             if room_name not in devices_by_room:
                 devices_by_room[room_name] = {

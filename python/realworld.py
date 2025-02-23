@@ -6,26 +6,27 @@ from swig_access import *
 
 if __name__ == '__main__':
     
+    #Load information from JSON into Python Object
     instanceno = 5
     fileloader = RevitJsonLoader(f"data/realworld/{instanceno}-ElecInfo.json")
     configloader = ConfigLoader(f"data/realworld/{instanceno}-electricitysetting.json")
-    # Load information into lists
     
+    # Load individual information into lists
     walls = fileloader.get_walls() # Example, assuming at least one wall exists
     PSB = fileloader.get_PSB()
     devices = fileloader.get_devices()
     doors = fileloader.get_doors()
 
     #Circuits created by their room ID
-    cirs = fileloader.get_devices_per_room()
+    cirs = fileloader.get_devices_per_room(devices)
+
     #Substitute the circuit in the data pulled from the JSON electricity setting
     configloader.substitute_circuit(cirs)
 
+    #Get circuits from electricity seeting info, which was subsitituted by our own
     circuits = configloader.get_circuits() 
     circuits = sorted(circuits)
     
-
-
     # Initialize Visualization 
     fig = go.Figure()
     fig_add_full_structure(fig,walls,PSB,doors,devices)
@@ -34,13 +35,23 @@ if __name__ == '__main__':
     num_colors = len(circuit_colors)
 
     for idx, cir in enumerate(circuits):
+
+        #List of devices id in the current circuit
         devices_id = configloader.get_circuit_devices(cir)
+        
+        #Config object like costs, thresholds, wire unit cost.
         config = configloader.get_circuits_config(cir)
+        
+        #Set floor height
         config.floor_height = fileloader.get_floor_height()
+
+        #List of devices object from that list of ids
         devices_subset = [dev for dev in devices if dev.id in devices_id]
         
+        #Create constructor
         gc = GraphConstructor()
         
+
         for wl in walls:
             gc.add_wall(wl)
         gc.set_PSB(PSB)
@@ -53,19 +64,17 @@ if __name__ == '__main__':
         #print graph 
         
         # Convert GraphConstructor to NetworkX
-        G, positions = graphconstructor_to_networkx(gc)
-
+        #G, positions = graphconstructor_to_networkx(gc)
         # Plot in 3D using Plotly
         #plot_3d_network(G, positions)
+        
 
-        print('this is gc.psb',gc.PSB_index)
-        # Ours
         da = DecompositionApproach(gc.g) #Wtf is this
 
 
-        da.PSB = gc.PSB_index
+        da.PSB = gc.PSB_index+1
         da.devices = gc.devices_indices
-        da.solve(use_mst = True)
+        da.solve(use_mst = False)
         fig_add_paths(fig, gc, da.paths, circuit_colors[idx % num_colors])
         
         print(f'instance {instanceno}, circuit {cir}, devices = {len(devices_subset)+1}, cost = {da.obj.first :.2f}, bend = {da.obj.second}')
