@@ -12,3 +12,4 @@ python/building_layout.html
 python/building_layout.html
 /python
 *.html
+.vscode/
