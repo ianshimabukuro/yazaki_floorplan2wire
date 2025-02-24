@@ -72,9 +72,9 @@ if __name__ == '__main__':
         da = DecompositionApproach(gc.g) #Wtf is this
 
 
-        da.PSB = gc.PSB_index+1
+        da.PSB = gc.PSB_index
         da.devices = gc.devices_indices
-        da.solve(use_mst = False)
+        da.solve(use_mst = True)
         fig_add_paths(fig, gc, da.paths, circuit_colors[idx % num_colors])
         
         print(f'instance {instanceno}, circuit {cir}, devices = {len(devices_subset)+1}, cost = {da.obj.first :.2f}, bend = {da.obj.second}')
