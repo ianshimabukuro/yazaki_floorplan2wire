@@ -515,7 +515,7 @@ namespace ewd
 		collect_door_grid(xs, ys);
 		collect_device_grid(xs, ys);
 
-		Hanan(xs,ys,{0.0});
+		Hanan(xs,ys,{0.0, 3300.0});
 
 		calc_costs();
 	}
@@ -624,6 +624,10 @@ namespace ewd
 			}
 			else 
 				devices_indices.push_back(g.find_vertex(dev.location));
+			if (dev.name == "Junction Box")
+			{
+				JB_index = devices_indices.back();
+			}
 		}
 
 		for(int i=0;i<devices.size();i++)

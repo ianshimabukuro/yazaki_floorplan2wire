@@ -77,6 +77,7 @@ namespace ewd
         GeometricGraph g;
         Device PSB;
         size_t PSB_index;
+        size_t JB_index;
 		std::vector<Device> devices;
 		std::vector<size_t> devices_indices;
 

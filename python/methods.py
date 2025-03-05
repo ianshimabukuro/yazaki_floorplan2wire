@@ -3,6 +3,7 @@ import json
 from os.path import join
 from os import listdir
 from tqdm import tqdm
+import numpy as np
 
 def ft2mm(x):
     return x*304.8
@@ -111,14 +112,40 @@ class RevitJsonLoader(object):
     def get_devices(self):
         devices = []
         devjson = self.data['Item4']
-        #add junction boxes
-        
+
         #add regular devices
         for item in tqdm(devjson, desc = 'Processing Devices', unit = 'device'):
             #print(str(item['Room_Id']),str(item['Name']))
             devices.append(Device(str(item['Id']), str(item['Name']), pointxyz(item['Point']), str(item['Host_Id']),str(item['Room_Id'])))
         return devices 
     
+    def get_junction_boxes(self):
+        jb = []
+        rooms = self.data['Item6']
+        i = 1
+        for room in rooms:
+            start = room['StartPoint']
+            end = room['EndPoint']
+            id = room['Id']
+            #name = room['Name']
+            #area = room['area']
+            if start and end:
+                all_points = { (p["X"], p["Y"]) for p in start+ end }
+                # Extract X and Y coordinates separately
+                X_coords = [p[0] for p in all_points]
+                Y_coords = [p[1] for p in all_points]
+
+                # Compute centroid
+                centroid_X = np.mean(X_coords)
+                centroid_Y = np.mean(Y_coords)
+
+                centroid = {"X": 304.8*float(centroid_X), "Y": 304.8*float(centroid_Y), "Z": 3300.0}
+                print(centroid)
+                jb.append(Device(str(303030+i), str('Junction Box'), pointxyz(centroid), str("Ceiling"),str(id)))
+                i+=1
+        return jb
+
+
     def get_doors(self):
         doors = []
         doorjson = self.data['Item7']

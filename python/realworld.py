@@ -7,7 +7,7 @@ from swig_access import *
 if __name__ == '__main__':
     
     #Load information from JSON into Python Object
-    instanceno = 5
+    instanceno = 6
     fileloader = RevitJsonLoader(f"data/realworld/{instanceno}-ElecInfo.json")
     configloader = ConfigLoader(f"data/realworld/{instanceno}-electricitysetting.json")
     
@@ -16,6 +16,8 @@ if __name__ == '__main__':
     PSB = fileloader.get_PSB()
     devices = fileloader.get_devices()
     doors = fileloader.get_doors()
+    junction_boxes = fileloader.get_junction_boxes()
+    devices += junction_boxes
 
     #Circuits created by their room ID
     cirs = fileloader.get_devices_per_room(devices)
@@ -64,17 +66,17 @@ if __name__ == '__main__':
         #print graph 
         
         # Convert GraphConstructor to NetworkX
-        #G, positions = graphconstructor_to_networkx(gc)
+        G, positions = graphconstructor_to_networkx(gc)
         # Plot in 3D using Plotly
-        #plot_3d_network(G, positions)
-        
+        plot_3d_network(G, positions)
+        JB_index = gc.JB_index
 
         da = DecompositionApproach(gc.g) #Wtf is this
 
 
-        da.PSB = gc.PSB_index
+        da.PSB = JB_index #Plus one sets the starting point as the first device in the circuit list
         da.devices = gc.devices_indices
-        da.solve(use_mst = True)
+        da.solve(use_mst = False)
         fig_add_paths(fig, gc, da.paths, circuit_colors[idx % num_colors])
         
         print(f'instance {instanceno}, circuit {cir}, devices = {len(devices_subset)+1}, cost = {da.obj.first :.2f}, bend = {da.obj.second}')
@@ -100,6 +102,6 @@ if __name__ == '__main__':
         legend=dict(x=0, y=1)
     )
     
-    fig.write_html("building_layout.html")
+    fig.write_html("6-building_layout.html")
     # Show the plot
     fig.show()
