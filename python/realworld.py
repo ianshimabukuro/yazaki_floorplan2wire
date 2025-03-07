@@ -3,6 +3,7 @@ from visualization import *
 import plotly.graph_objects as go
 import plotly.colors as pc
 from swig_access import *
+from EWDpy import vecIndex
 
 if __name__ == '__main__':
     
@@ -12,7 +13,7 @@ if __name__ == '__main__':
     configloader = ConfigLoader(f"data/realworld/{instanceno}-electricitysetting.json")
     
     # Load individual information into lists
-    walls = fileloader.get_walls() # Example, assuming at least one wall exists
+    walls = fileloader.get_walls() 
     PSB = fileloader.get_PSB()
     devices = fileloader.get_devices()
     doors = fileloader.get_doors()
@@ -53,7 +54,7 @@ if __name__ == '__main__':
         #Create constructor
         gc = GraphConstructor()
         
-
+        
         for wl in walls:
             gc.add_wall(wl)
         gc.set_PSB(PSB)
@@ -63,22 +64,32 @@ if __name__ == '__main__':
             gc.add_device(dev)
         gc.read_config(config)
         gc.construct()
-        #print graph 
+    
         
-        # Convert GraphConstructor to NetworkX
-        G, positions = graphconstructor_to_networkx(gc)
-        # Plot in 3D using Plotly
-        plot_3d_network(G, positions)
-        JB_index = gc.JB_index
+       
+        #G, positions = graphconstructor_to_networkx(gc)
+        #plot_3d_network(G, positions)
 
-        da = DecompositionApproach(gc.g) #Wtf is this
+        
 
 
-        da.PSB = JB_index #Plus one sets the starting point as the first device in the circuit list
+        #Create Room Harness
+        da = DecompositionApproach(gc.g) 
+        da.PSB = gc.JB_index
         da.devices = gc.devices_indices
         da.solve(use_mst = False)
+        print(da.paths)
         fig_add_paths(fig, gc, da.paths, circuit_colors[idx % num_colors])
-        
+
+        #Create Home Run Wires
+        da.PSB = gc.PSB_index 
+        da.devices = vecIndex()  # Create an empty C++ vector
+        da.devices.append(gc.JB_index)  # Add the JB_index as the only element
+        da.solve(use_mst = False)
+        print(da.paths)
+       
+    
+        fig_add_paths(fig, gc, da.paths, circuit_colors[idx % num_colors])
         print(f'instance {instanceno}, circuit {cir}, devices = {len(devices_subset)+1}, cost = {da.obj.first :.2f}, bend = {da.obj.second}')
         # # Gurobi
         # from gurobi_solve import grb_solve
@@ -87,6 +98,20 @@ if __name__ == '__main__':
         # # Cplex
         # from cplex_solve import cpl_solve
         # cpl_solve(gc.g, [gc.PSB_index]+devices_subset)
+        
+        fig.update_layout(
+        title="Building Layout Visualization",
+        scene=dict(
+            xaxis=dict(range=[x_center - max_range / 2, x_center + max_range / 2]),
+            yaxis=dict(range=[y_center - max_range / 2, y_center + max_range / 2]),
+            zaxis=dict(range=[z_center - max_range / 2, z_center + max_range / 2]),
+            aspectmode='manual',
+            aspectratio=dict(x=1, y=1, z=1)  # Force 1:1:1 scaling for all axes
+        ),
+        legend=dict(x=0, y=1)
+        )
+        fig.show()
+
     
 
     #Also plotly
