@@ -83,12 +83,18 @@ def fig_add_PSB(fig,PSB):
 def fig_add_devices(fig,devices):
     for dev in devices:
         loc = dev.location
-        fig.add_trace(go.Scatter3d(
-            x=[loc.x], y=[loc.y], z=[loc.z],
-            mode='markers',
-            marker=dict(color='green', size=3),
-            name='Device'
-        ))
+        if dev.name == 'Junction Box':
+            fig.add_trace(go.Scatter3d(
+                x=[loc.x], y=[loc.y], z=[loc.z],
+                mode='markers',
+                marker=dict(symbol = 'square', color='green', size=5)
+            ))
+        else:
+            fig.add_trace(go.Scatter3d(
+                x=[loc.x], y=[loc.y], z=[loc.z],
+                mode='markers',
+                marker=dict(color='green', size=3)
+            ))
 
 
 def fig_add_doors(fig,doors):
