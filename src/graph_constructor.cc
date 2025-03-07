@@ -515,7 +515,7 @@ namespace ewd
 		collect_door_grid(xs, ys);
 		collect_device_grid(xs, ys);
 
-		Hanan(xs,ys,{0.0, 3300.0});
+		Hanan(xs,ys,{0.0});
 
 		calc_costs();
 	}
