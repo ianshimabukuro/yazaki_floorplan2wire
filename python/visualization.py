@@ -1,5 +1,5 @@
 import plotly.graph_objects as go
-
+import cadquery as cq
 import plotly.graph_objects as go
 
 def fig_add_walls(fig, walls):
@@ -193,4 +193,54 @@ def fig_add_full_structure(fig,walls,PSB,doors,devices):
     fig_add_doors(fig, doors)
 
 
+def create_walls(walls_obj):
+    """
+    Creates a 3D representation of walls from a list of wall objects.
 
+    Args:
+        walls_obj (list): A list of wall objects, each having methods:
+            - get_start()
+            - get_end()
+            - get_thickness()
+            - get_height()
+
+    Returns:
+        CadQuery object containing all walls.
+    """
+    walls = cq.Workplane("XY")
+
+    for wl in walls_obj:
+        # Extract properties using provided methods
+        start = wl.get_start()
+        end = wl.get_end()
+        thickness = wl.get_thickness()
+        height = wl.get_height()
+
+        # Compute direction and unit vectors
+        dx = end.x - start.x
+        dy = end.y - start.y
+        length = (dx**2 + dy**2)**0.5
+        ux, uy = dx / length, dy / length  # Unit vector along wall
+        nx, ny = -uy, ux  # Perpendicular vector for thickness
+
+        # Half thickness offset
+        half_thickness_x = (thickness / 2) * nx
+        half_thickness_y = (thickness / 2) * ny
+
+        # Define the wall shape using a polyline
+        wall_shape = (
+            cq.Workplane("XY")
+            .move(start.x, start.y)  # Move to start position
+            .polyline([
+                (end.x - start.x, end.y - start.y),  # Draw length
+                (half_thickness_x * 2, half_thickness_y * 2),  # Thickness
+                (-dx, -dy)  # Close rectangle
+            ])
+            .close()
+            .extrude(height)
+        )
+
+        # Combine all walls
+        walls = walls.union(wall_shape)
+    cq.exporters.export(walls, "room_layout.step")
+    return walls

@@ -1,10 +1,11 @@
 from EWDpy import *
-
+import math
 import json 
 from os.path import join
 from os import listdir
 from tqdm import tqdm
 import numpy as np
+import cadquery as cq
 
 def ft2mm(x):
     return x*304.8
@@ -102,6 +103,49 @@ class RevitJsonLoader(object):
                 Wall(name, str(item['Id']), ps, pe, p0.distance(p4), p0.distance(p1), t)
             )
         return walls
+    
+    def get_cad_walls(self):
+        walljson = self.data['Item1']
+        
+        # Global Workplane to store all walls
+        walls = cq.Workplane("XY")  
+        
+        for wl in walljson:
+            rotation_angle = 0
+            # Extract start and end points
+            point1, point2 = wl['LocationCurve'][0], wl['LocationCurve'][1]
+
+            # Hardcoded dimensions
+            length = math.sqrt((point2["X"] - point1["X"])**2 + (point2["Y"] - point1["Y"])**2)
+            thickness = 200  # Hardcoded thickness
+            height = 3300  # Hardcoded height
+
+            # Compute position
+            mid_x = (point1["X"] + point2["X"]) / 2
+            mid_y = (point1["Y"] + point2["Y"]) / 2
+            mid_z = (point1["Z"] + point2["Z"]) / 2
+
+            # Determine orientation
+            if int(point1["Y"]) == int(point2["Y"]):  # Horizontal Wall
+                rotation_angle = 0  # No rotation needed
+            elif int(point1["X"]) == int(point2["X"]):  # Vertical Wall
+                rotation_angle = 90  # Rotate 90 degrees
+            print(point1,point2,rotation_angle)
+            # Create individual wall from a new Workplane
+            wall = (
+                cq.Workplane("XY")
+                .box(length, thickness, height)
+                .rotate((0, 0, 0), (0, 0, 1), rotation_angle)  # Use hardcoded thickness and height
+                .translate((mid_x, mid_y, mid_z))  # Move to correct position
+                  # Apply rotation if needed
+            )
+
+            # Union each wall into the main Workplane
+            walls = walls.union(wall)
+
+        return walls.rotate((0, 0, 0), (1, 0, 0), 90)
+
+
     
     def get_PSB(self):
         for b in self.data['Item5']:
