@@ -58,3 +58,7 @@ Implement EWD on a synthetic instance using the command
 ```
 python synthetic.py
 ```
+
+
+For installing CadQuery, it is recommended to simply pip install the cadquery github. it will come with most of the packages.
+Also it is necessary to pip install ocp, but you can just search ocp on pypi and the most recent one should be the one you should use.
