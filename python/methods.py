@@ -130,20 +130,48 @@ class RevitJsonLoader(object):
                 rotation_angle = 0  # No rotation needed
             elif int(point1["X"]) == int(point2["X"]):  # Vertical Wall
                 rotation_angle = 90  # Rotate 90 degrees
-            print(point1,point2,rotation_angle)
             # Create individual wall from a new Workplane
             wall = (
                 cq.Workplane("XY")
                 .box(length, thickness, height)
                 .rotate((0, 0, 0), (0, 0, 1), rotation_angle)  # Use hardcoded thickness and height
-                .translate((mid_x, mid_y, mid_z))  # Move to correct position
+                .translate((mid_x, mid_y, mid_z))
+                .setColor((1, 1, 1))  # Move to correct position
                   # Apply rotation if needed
             )
 
             # Union each wall into the main Workplane
             walls = walls.union(wall)
 
-        return walls.rotate((0, 0, 0), (1, 0, 0), 90)
+        return walls
+    #.rotate((0, 0, 0), (1, 0, 0), 90)
+    def cut_cad_doors(self):
+        doorjson = self.data['Item7']
+        door_cutouts = cq.Workplane("XY") 
+        
+        for dr in doorjson:
+            boundary = dr['Boundary']
+            mid_point = dr['Point']
+            height = abs(boundary[2]["Z"] - boundary[0]["Z"])
+            print(height)
+            mid_x, mid_y, mid_z = mid_point["X"], mid_point["Y"], mid_point["Z"] + ((3300 - height)/ 2)
+             # Determine orientation
+            rotation_angle = 0
+            # Determine width based on orientation
+            if int(boundary[0]["Y"]) == int(boundary[1]["Y"]):  # Horizontal Door
+                width = abs(boundary[1]["X"] - boundary[0]["X"])
+                rotation_angle = 0  # No rotation needed
+            else:  # Vertical Door
+                width = abs(boundary[1]["Y"] - boundary[0]["Y"])
+                rotation_angle = 90  # Rotate 90 degrees
+            door_cutout = (
+                cq.Workplane("XY")
+                .box(width, 200, height)
+                .rotate((0, 0, 0), (0, 0, 1), rotation_angle)
+                .translate((mid_x, mid_y, mid_z))
+            )
+            door_cutouts = door_cutouts.union(door_cutout)
+        return door_cutouts
 
 
     
@@ -185,7 +213,6 @@ class RevitJsonLoader(object):
                 centroid_Y = np.mean(Y_coords)
 
                 centroid = {"X": 304.8*float(centroid_X), "Y": 304.8*float(centroid_Y), "Z": 3300.0}
-                print(centroid)
                 jb.append(Device(str(303030+i), str('Junction Box'), pointxyz(centroid), str("Ceiling"),str(id)))
                 i+=1
         return jb

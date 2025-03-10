@@ -16,8 +16,10 @@ if __name__ == '__main__':
     
     # Load individual information into lists
     walls = fileloader.get_walls() 
-    all_walls = fileloader.get_cad_walls()
-    cq.exporters.export(all_walls, 'walls_model.step')
+    #all_walls = fileloader.get_cad_walls()
+    #door_cutouts = fileloader.cut_cad_doors()
+    #all_walls = all_walls.cut(door_cutouts).rotate((0, 0, 0), (1, 0, 0), 90)
+    #cq.exporters.export(all_walls, 'walls_model.step')
     PSB = fileloader.get_PSB()
     devices = fileloader.get_devices()
     doors = fileloader.get_doors()
