@@ -1,10 +1,10 @@
 from methods import *
 from visualization import *
-#import plotly.graph_objects as go
-#import plotly.colors as pc
+import plotly.graph_objects as go
+import plotly.colors as pc
 from swig_access import *
 from EWDpy import vecIndex
-import cadquery as cq
+#import cadquery as cq
 
 
 if __name__ == '__main__':
@@ -36,13 +36,13 @@ if __name__ == '__main__':
     circuits = configloader.get_circuits() 
     circuits = sorted(circuits)
     
-    # Initialize Visualization 
-    # fig = go.Figure()
-    # fig_add_full_structure(fig,walls,PSB,doors,devices)
-    # x_center,y_center,z_center,max_range = get_axis_boundaries(walls,devices,PSB,doors)
-    # circuit_colors = pc.qualitative.Plotly
-    # num_colors = len(circuit_colors)
-
+    #Initialize Visualization 
+    fig = go.Figure()
+    fig_add_full_structure(fig,walls,PSB,doors,devices)
+    x_center,y_center,z_center,max_range = get_axis_boundaries(walls,devices,PSB,doors)
+    circuit_colors = pc.qualitative.Plotly
+    num_colors = len(circuit_colors)
+    all_lengths = {}
     for idx, cir in enumerate(circuits):
 
         #List of devices id in the current circuit
@@ -84,19 +84,24 @@ if __name__ == '__main__':
         da.PSB = gc.JB_index
         da.devices = gc.devices_indices
         da.solve(use_mst = False)
-        print(da.paths)
+        #print(da.paths)
         # fig_add_paths(fig, gc, da.paths, circuit_colors[idx % num_colors])
-
+        
         #Create Home Run Wires
         da.PSB = gc.PSB_index 
         da.devices = vecIndex()  # Create an empty C++ vector
         da.devices.append(gc.JB_index)  # Add the JB_index as the only element
         da.solve(use_mst = False)
-        print(da.paths)
+        lengths = paths_to_lengths(gc,cir,da.paths)
+        all_lengths.update(lengths)
+        
+        
        
     
-        # fig_add_paths(fig, gc, da.paths, circuit_colors[idx % num_colors])
+        fig_add_paths(fig, gc, da.paths, circuit_colors[idx % num_colors])
         print(f'instance {instanceno}, circuit {cir}, devices = {len(devices_subset)+1}, cost = {da.obj.first :.2f}, bend = {da.obj.second}')
+        print(lengths)
+        
         # # Gurobi
         # from gurobi_solve import grb_solve
         # grb_solve(gc.g, [gc.PSB_index]+devices_subset)
@@ -105,35 +110,35 @@ if __name__ == '__main__':
         # from cplex_solve import cpl_solve
         # cpl_solve(gc.g, [gc.PSB_index]+devices_subset)
         
-        # fig.update_layout(
-        # title="Building Layout Visualization",
-        # scene=dict(
-        #     xaxis=dict(range=[x_center - max_range / 2, x_center + max_range / 2]),
-        #     yaxis=dict(range=[y_center - max_range / 2, y_center + max_range / 2]),
-        #     zaxis=dict(range=[z_center - max_range / 2, z_center + max_range / 2]),
-        #     aspectmode='manual',
-        #     aspectratio=dict(x=1, y=1, z=1)  # Force 1:1:1 scaling for all axes
-        # ),
-        # legend=dict(x=0, y=1)
-        # )
-        # fig.show()
+        fig.update_layout(
+        title="Building Layout Visualization",
+        scene=dict(
+            xaxis=dict(range=[x_center - max_range / 2, x_center + max_range / 2]),
+            yaxis=dict(range=[y_center - max_range / 2, y_center + max_range / 2]),
+            zaxis=dict(range=[z_center - max_range / 2, z_center + max_range / 2]),
+            aspectmode='manual',
+            aspectratio=dict(x=1, y=1, z=1)  # Force 1:1:1 scaling for all axes
+        ),
+        legend=dict(x=0, y=1)
+        )
+        #fig.show()
 
     
-
+    lengths_to_excel(all_lengths)
     #Also plotly
-    # fig.update_layout(
-    #     title="Building Layout Visualization",
-    #     scene=dict(
-    #         xaxis=dict(range=[x_center - max_range / 2, x_center + max_range / 2]),
-    #         yaxis=dict(range=[y_center - max_range / 2, y_center + max_range / 2]),
-    #         zaxis=dict(range=[z_center - max_range / 2, z_center + max_range / 2]),
-    #         aspectmode='manual',
-    #         aspectratio=dict(x=1, y=1, z=1)  # Force 1:1:1 scaling for all axes
-    #     ),
-    #     legend=dict(x=0, y=1)
-    # )
+    fig.update_layout(
+        title="Building Layout Visualization",
+        scene=dict(
+            xaxis=dict(range=[x_center - max_range / 2, x_center + max_range / 2]),
+            yaxis=dict(range=[y_center - max_range / 2, y_center + max_range / 2]),
+            zaxis=dict(range=[z_center - max_range / 2, z_center + max_range / 2]),
+            aspectmode='manual',
+            aspectratio=dict(x=1, y=1, z=1)  # Force 1:1:1 scaling for all axes
+        ),
+        legend=dict(x=0, y=1)
+    )
     
-    # fig.write_html("6-building_layout.html")
-    # # Show the plot
-    # fig.show()
+    #fig.write_html("6-building_layout.html")
+    # Show the plot
+    #fig.show()
     

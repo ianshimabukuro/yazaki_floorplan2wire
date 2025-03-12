@@ -117,9 +117,9 @@ def fig_add_doors(fig,doors):
         ))
 
 def fig_add_paths(fig, gc, paths,color):
-    for path in paths:
+    for i in range(len(paths)):
         x, y, z = [], [], []
-        for v in path:
+        for v in paths[i]:
             point = gc.vertex(v)  # Get the 3D point of the vertex
             x.append(point.x)
             y.append(point.y)
