@@ -13,3 +13,5 @@ python/building_layout.html
 .vscode/
 .venv/
 
+*.step
+*.xlsx
