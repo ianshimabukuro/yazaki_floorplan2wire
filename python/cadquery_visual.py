@@ -11,7 +11,7 @@ def cut_cad_doors(data):
             mid_point = dr['Point']
             height = abs(boundary[2]["Z"] - boundary[0]["Z"])
             print(height)
-            mid_x, mid_y, mid_z = mid_point["X"], mid_point["Y"], mid_point["Z"] + ((3300 - height)/ 2)
+            mid_x, mid_y, mid_z = mid_point["X"], mid_point["Y"], mid_point["Z"] - ((3300 - height)/ 2)
              # Determine orientation
             rotation_angle = 0
             # Determine width based on orientation
@@ -61,10 +61,27 @@ def get_cad_walls(data):
                 cq.Workplane("XY")
                 .box(length, thickness, height)
                 .rotate((0, 0, 0), (0, 0, 1), rotation_angle)  # Use hardcoded thickness and height
-                .translate((mid_x, mid_y, mid_z))
-                .setColor((1, 1, 1))  # Move to correct position
+                .translate((mid_x, mid_y, mid_z)) # Move to correct position
                   # Apply rotation if needed
             )
 
             # Union each wall into the main Workplane
             walls = walls.union(wall)
+        return walls
+
+def add_paths(obj, gc, paths):
+    for i in range(len(paths)):
+        if not paths[i]:  # ✅ Skip empty paths
+            continue
+        print(paths[i])
+        points = [gc.vertex(v) for v in paths[i]]  # Get the 3D points from vertices
+        cq_points = [cq.Vector(p.x, p.y, p.z) for p in points]  # Convert to CadQuery vectors
+        
+        wire = cq.Wire.makePolygon(cq_points, close = False)  # Create a polyline (path)
+        try:
+            obj = obj.add(wire)  # Add path to the object
+        except ValueError:
+            obj = wire
+    
+    return obj
+     
