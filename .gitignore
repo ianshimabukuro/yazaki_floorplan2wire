@@ -3,13 +3,13 @@ bin/
 *.exp 
 *.lib
 *.pyd
+
 python/EWDpy.py
 python/__pycache__/
 python/*.exe
-python/building_layout.html
 building_layout.html
 python/building_layout.html
-python/building_layout.html
-/python
 *.html
 .vscode/
+.venv/
+
