@@ -1,8 +1,11 @@
 from methods import *
-from visualization import *
+from plotly_visual import *
+from cadquery_visual import *
+from excel_export import *
+#from visualization import *
 import plotly.graph_objects as go
 import plotly.colors as pc
-from swig_access import *
+#from swig_access import *
 from EWDpy import vecIndex
 #import cadquery as cq
 
@@ -10,16 +13,13 @@ from EWDpy import vecIndex
 if __name__ == '__main__':
     
     #Load information from JSON into Python Object
-    instanceno = 6
+    instanceno = 4
     fileloader = RevitJsonLoader(f"data/realworld/{instanceno}-ElecInfo.json")
     configloader = ConfigLoader(f"data/realworld/{instanceno}-electricitysetting.json")
     
     # Load individual information into lists
+    data = fileloader.return_data()
     walls = fileloader.get_walls() 
-    #all_walls = fileloader.get_cad_walls()
-    #door_cutouts = fileloader.cut_cad_doors()
-    #all_walls = all_walls.cut(door_cutouts).rotate((0, 0, 0), (1, 0, 0), 90)
-    #cq.exporters.export(all_walls, 'walls_model.step')
     PSB = fileloader.get_PSB()
     devices = fileloader.get_devices()
     doors = fileloader.get_doors()
@@ -36,13 +36,21 @@ if __name__ == '__main__':
     circuits = configloader.get_circuits() 
     circuits = sorted(circuits)
     
-    #Initialize Visualization 
+    #Initialize plotly visual
     fig = go.Figure()
     fig_add_full_structure(fig,walls,PSB,doors,devices)
     x_center,y_center,z_center,max_range = get_axis_boundaries(walls,devices,PSB,doors)
     circuit_colors = pc.qualitative.Plotly
     num_colors = len(circuit_colors)
+
+    #Initialize cad visual
+    #all_walls = get_cad_walls(data)
+    #door_cutouts = cut_cad_doors(data)
+    #all_walls = all_walls.cut(door_cutouts)
+   
+   
     all_lengths = {}
+
     for idx, cir in enumerate(circuits):
 
         #List of devices id in the current circuit
@@ -71,20 +79,11 @@ if __name__ == '__main__':
         gc.read_config(config)
         gc.construct()
     
-        
-       
-        #G, positions = graphconstructor_to_networkx(gc)
-        #plot_3d_network(G, positions)
-
-        
-
-
         #Create Room Harness
         da = DecompositionApproach(gc.g) 
         da.PSB = gc.JB_index
         da.devices = gc.devices_indices
         da.solve(use_mst = False)
-        #print(da.paths)
         # fig_add_paths(fig, gc, da.paths, circuit_colors[idx % num_colors])
         
         #Create Home Run Wires
@@ -92,53 +91,31 @@ if __name__ == '__main__':
         da.devices = vecIndex()  # Create an empty C++ vector
         da.devices.append(gc.JB_index)  # Add the JB_index as the only element
         da.solve(use_mst = False)
+
+
+
+        #Routine Done, Gather important info
         lengths = paths_to_lengths(gc,cir,da.paths)
         all_lengths.update(lengths)
         
-        
-       
-    
         fig_add_paths(fig, gc, da.paths, circuit_colors[idx % num_colors])
+        plotly_show(fig, x_center,y_center,z_center, max_range)
+
+        #plot_3d_network(gc)
+
         print(f'instance {instanceno}, circuit {cir}, devices = {len(devices_subset)+1}, cost = {da.obj.first :.2f}, bend = {da.obj.second}')
         print(lengths)
         
-        # # Gurobi
-        # from gurobi_solve import grb_solve
-        # grb_solve(gc.g, [gc.PSB_index]+devices_subset)
-            
-        # # Cplex
-        # from cplex_solve import cpl_solve
-        # cpl_solve(gc.g, [gc.PSB_index]+devices_subset)
-        
-        fig.update_layout(
-        title="Building Layout Visualization",
-        scene=dict(
-            xaxis=dict(range=[x_center - max_range / 2, x_center + max_range / 2]),
-            yaxis=dict(range=[y_center - max_range / 2, y_center + max_range / 2]),
-            zaxis=dict(range=[z_center - max_range / 2, z_center + max_range / 2]),
-            aspectmode='manual',
-            aspectratio=dict(x=1, y=1, z=1)  # Force 1:1:1 scaling for all axes
-        ),
-        legend=dict(x=0, y=1)
-        )
-        #fig.show()
 
-    
+    #Export excel
     lengths_to_excel(all_lengths)
-    #Also plotly
-    fig.update_layout(
-        title="Building Layout Visualization",
-        scene=dict(
-            xaxis=dict(range=[x_center - max_range / 2, x_center + max_range / 2]),
-            yaxis=dict(range=[y_center - max_range / 2, y_center + max_range / 2]),
-            zaxis=dict(range=[z_center - max_range / 2, z_center + max_range / 2]),
-            aspectmode='manual',
-            aspectratio=dict(x=1, y=1, z=1)  # Force 1:1:1 scaling for all axes
-        ),
-        legend=dict(x=0, y=1)
-    )
     
+    #Export CAD
+    #cq.exporters.export(all_walls.rotate((0, 0, 0), (1, 0, 0), 90, 'walls_model.step')
+
+    #Export HTML of Plotly
     #fig.write_html("6-building_layout.html")
-    # Show the plot
-    #fig.show()
+    
+    # Show final plot
+    #plotly_show(fig, x_center,y_center,z_center, max_range)
     
