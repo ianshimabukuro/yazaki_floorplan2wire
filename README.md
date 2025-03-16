@@ -24,7 +24,7 @@ Go inside the project folder and create a build directory if not inside already
 cd yazaki_floorplan2wire
 mkdir build
 cd build
-
+```
 Then build and compile on VS Code terminal:
 ```
 cmake .. -T host=x64 -A x64
