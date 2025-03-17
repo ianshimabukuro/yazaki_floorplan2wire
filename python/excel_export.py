@@ -50,4 +50,4 @@ def lengths_to_excel(lengths):
     df.index.name = "Circuit"
 
     # Save to Excel
-    df.to_excel('wiring_lengths.xlsx')
+    df.to_excel('output/wiring_lengths.xlsx')

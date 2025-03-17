@@ -11,7 +11,11 @@ import cadquery as cq
 
 
 if __name__ == '__main__':
-    
+    show_p_grid = False
+    show_p_final = False
+    export_cad = True
+    export_excel = True
+
     #Load information from JSON into Python Object
     instanceno = 6
     fileloader = RevitJsonLoader(f"data/realworld/{instanceno}-ElecInfo.json")
@@ -37,20 +41,22 @@ if __name__ == '__main__':
     circuits = sorted(circuits)
     
     #Initialize plotly visual
-    fig = go.Figure()
-    fig_add_full_structure(fig,walls,PSB,doors,devices)
-    x_center,y_center,z_center,max_range = get_axis_boundaries(walls,devices,PSB,doors)
-    circuit_colors = pc.qualitative.Plotly
-    num_colors = len(circuit_colors)
+    if show_p_final:
+        fig = go.Figure()
+        fig_add_full_structure(fig,walls,PSB,doors,devices)
+        x_center,y_center,z_center,max_range = get_axis_boundaries(walls,devices,PSB,doors)
+        circuit_colors = pc.qualitative.Plotly
+        num_colors = len(circuit_colors)
 
     #Initialize cad visual
-    all_walls = get_cad_walls(data)
-    door_cutouts = cut_cad_doors(data)
-    all_walls = all_walls.cut(door_cutouts)
-   
-   
-    all_lengths = {}
-    wires = cq.Workplane()
+    if export_cad:
+        all_walls = get_cad_walls(data)
+        door_cutouts = cut_cad_doors(data)
+        all_walls = all_walls.cut(door_cutouts)
+        wires = cq.Workplane()
+    
+    if export_excel:
+        all_lengths = {}
 
     for idx, cir in enumerate(circuits):
 
@@ -95,37 +101,37 @@ if __name__ == '__main__':
 
 
         #Routine Done, Gather important info
-        lengths = paths_to_lengths(gc,cir,da.paths)
-        all_lengths.update(lengths)
-        
-        fig_add_paths(fig, gc, da.paths, circuit_colors[idx % num_colors])
+        if export_excel:
+            lengths = paths_to_lengths(gc,cir,da.paths)
+            all_lengths.update(lengths)
+            
+        if show_p_final:
+            fig_add_paths(fig, gc, da.paths, circuit_colors[idx % num_colors])
         #plotly_show(fig, x_center,y_center,z_center, max_range)
         
-        wires = add_paths(wires,gc,da.paths)
-        #plot_3d_network(gc)
+        if export_cad:
+            wires = add_paths(wires,gc,da.paths)
+        
+        if show_p_grid:
+            plot_3d_network(gc)
 
         print(f'instance {instanceno}, circuit {cir}, devices = {len(devices_subset)+1}, cost = {da.obj.first :.2f}, bend = {da.obj.second}')
-        print(lengths)
         
 
     #Export excel
-    lengths_to_excel(all_lengths)
+    if export_excel:
+        lengths_to_excel(all_lengths)
     
     #Export CAD
-    cq.exporters.export(all_walls.rotate((0, 0, 0), (1, 0, 0), 90), 'walls_model.step')
-    cq.exporters.export(wires, 'wires.step')
-
-
-    #all_walls=all_walls.rotate((0, 0, 0), (1, 0, 0), 180)
-
-    # Move wires down by half of the wall height (3300 / 2)
-    wires = wires.translate((0, 0, -3300 / 2))  
-    final_model = all_walls.add(wires)
-    cq.exporters.export(final_model.rotate((0, 0, 0), (1, 0, 0), -90), 'final_model.step')
+    if export_cad:
+        wires = wires.translate((0, 0, -3300 / 2))  
+        final_model = all_walls.add(wires)
+        cq.exporters.export(final_model.rotate((0, 0, 0), (1, 0, 0), -90), 'output/final_model.step')
 
     #Export HTML of Plotly
     #fig.write_html("6-building_layout.html")
     
     # Show final plot
-    plotly_show(fig, x_center,y_center,z_center, max_range)
+    if show_p_final:
+        plotly_show(fig, x_center,y_center,z_center, max_range)
     
