@@ -12,12 +12,12 @@ import cadquery as cq
 
 if __name__ == '__main__':
     show_p_grid = False
-    show_p_final = False
+    show_p_final = True
     export_cad = True
-    export_excel = True
+    export_excel = False
 
     #Load information from JSON into Python Object
-    instanceno = 6
+    instanceno = 3
     fileloader = RevitJsonLoader(f"data/realworld/{instanceno}-ElecInfo.json")
     configloader = ConfigLoader(f"data/realworld/{instanceno}-electricitysetting.json")
     
@@ -41,7 +41,7 @@ if __name__ == '__main__':
     circuits = sorted(circuits)
     
     #Initialize plotly visual
-    if show_p_final:
+    if show_p_final or show_p_grid:
         fig = go.Figure()
         fig_add_full_structure(fig,walls,PSB,doors,devices)
         x_center,y_center,z_center,max_range = get_axis_boundaries(walls,devices,PSB,doors)
@@ -113,7 +113,7 @@ if __name__ == '__main__':
             wires = add_paths(wires,gc,da.paths)
         
         if show_p_grid:
-            plot_3d_network(gc)
+            plot_3d_network(gc, x_center,y_center,z_center,max_range)
 
         print(f'instance {instanceno}, circuit {cir}, devices = {len(devices_subset)+1}, cost = {da.obj.first :.2f}, bend = {da.obj.second}')
         

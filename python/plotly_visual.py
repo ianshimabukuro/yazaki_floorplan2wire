@@ -233,7 +233,7 @@ def graphconstructor_to_networkx(graph):
 
     return G, positions
 
-def plot_3d_network(graph):
+def plot_3d_network(graph, x_center, y_center, z_center, max_range):
 
     G,positions = graphconstructor_to_networkx(graph)
     
@@ -276,11 +276,12 @@ def plot_3d_network(graph):
     fig.update_layout(
         title="3D Hanan Grid Visualization",
         scene=dict(
-            xaxis_title="X",
-            yaxis_title="Y",
-            zaxis_title="Z",
+            xaxis=dict(range=[x_center - max_range / 2, x_center + max_range / 2]),
+            yaxis=dict(range=[y_center - max_range / 2, y_center + max_range / 2]),
+            zaxis=dict(range=[z_center - max_range / 2, z_center + max_range / 2]),
+            aspectmode='manual',
+            aspectratio=dict(x=1, y=1, z=1)  # Force 1:1:1 scaling for all axes
         ),
-        margin=dict(l=0, r=0, b=0, t=40),
-    )
-
+        legend=dict(x=0, y=1)
+        )
     fig.show()

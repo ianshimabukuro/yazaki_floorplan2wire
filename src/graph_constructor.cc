@@ -515,7 +515,7 @@ namespace ewd
 		collect_door_grid(xs, ys);
 		collect_device_grid(xs, ys);
 
-		Hanan(xs,ys,{0.0});
+		Hanan(xs,ys,{3300.0});
 
 		calc_costs();
 	}
@@ -606,21 +606,23 @@ namespace ewd
 				}
 			}
 		}
-
-		if(fabs(PSB.location.z)>ABS_ERR)
+        //Check z location of psb
+		if(fabs(PSB.location.z)<3300.0-ABS_ERR)
 		{
 			PSB_index = g.add_vertex_simply(PSB.location);
-			add_edge(PSB_index, g.find_vertex(Point(PSB.location.x, PSB.location.y, 0.0)));
+			add_edge(PSB_index, g.find_vertex(Point(PSB.location.x, PSB.location.y, 3300.0)));
 		}
 		else
 			PSB_index = g.find_vertex(PSB.location);
 		
+
+	     //Check z location of devices. Either adds node or connects to projection
 		for(auto& dev : devices)
 		{
-			if(fabs(dev.location.z)>ABS_ERR)
+			if(fabs(dev.location.z)<3300.0-ABS_ERR)
 			{
 				devices_indices.push_back(g.add_vertex_simply(dev.location));
-				add_edge(devices_indices.back(), g.find_vertex(Point(dev.location.x, dev.location.y, 0.0)));
+				add_edge(devices_indices.back(), g.find_vertex(Point(dev.location.x, dev.location.y, 3300.0)));
 			}
 			else 
 				devices_indices.push_back(g.find_vertex(dev.location));
