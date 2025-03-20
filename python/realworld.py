@@ -8,13 +8,14 @@ import plotly.colors as pc
 
 from EWDpy import vecIndex
 import cadquery as cq
+from cadquery.occ_impl.exporters.assembly import exportAssembly
 
 
 if __name__ == '__main__':
     show_p_grid = False
     show_p_final = True
     export_cad = True
-    export_excel = False
+    export_excel = True
 
     #Load information from JSON into Python Object
     instanceno = 3
@@ -28,6 +29,15 @@ if __name__ == '__main__':
     devices = fileloader.get_devices()
     doors = fileloader.get_doors()
     junction_boxes = fileloader.get_junction_boxes()
+    
+    if export_cad:
+        all_walls = get_cad_walls(data)
+        door_cutouts = cut_cad_doors(data)
+        all_walls = all_walls.cut(door_cutouts)
+        dvs = add_dvs(devices)
+        wires = cq.Workplane()
+
+    #Join devices with junction_boxes
     devices += junction_boxes
 
     #Circuits created by their room ID
@@ -49,11 +59,8 @@ if __name__ == '__main__':
         num_colors = len(circuit_colors)
 
     #Initialize cad visual
-    if export_cad:
-        all_walls = get_cad_walls(data)
-        door_cutouts = cut_cad_doors(data)
-        all_walls = all_walls.cut(door_cutouts)
-        wires = cq.Workplane()
+   
+        
     
     if export_excel:
         all_lengths = {}
@@ -98,6 +105,7 @@ if __name__ == '__main__':
         da.devices.append(gc.JB_index)  # Add the JB_index as the only element
         da.solve(use_mst = False)
 
+        
 
 
         #Routine Done, Gather important info
@@ -111,6 +119,7 @@ if __name__ == '__main__':
         
         if export_cad:
             wires = add_paths(wires,gc,da.paths)
+            
         
         if show_p_grid:
             plot_3d_network(gc, x_center,y_center,z_center,max_range)
@@ -124,9 +133,18 @@ if __name__ == '__main__':
     
     #Export CAD
     if export_cad:
-        wires = wires.translate((0, 0, -3300 / 2))  
-        final_model = all_walls.add(wires)
-        cq.exporters.export(final_model.rotate((0, 0, 0), (1, 0, 0), -90), 'output/final_model.step')
+        jbs = add_jbs(junction_boxes)
+        psb_box = cq.Workplane("XY").box(400, 150, 600)
+        psb_box = psb_box.translate((PSB.location.x, PSB.location.y, PSB.location.z))
+        final = cq.Assembly()
+        final.add(psb_box.translate((0, 0, -3300 / 2)).rotate((0, 0, 0), (1, 0, 0), -90), color=cq.Color('Red'))
+        final.add(all_walls.rotate((0, 0, 0), (1, 0, 0), -90),color=cq.Color(1.0, 0.96, 0.9, 0.9))
+        final.add(jbs.translate((0, 0, -3300 / 2)).rotate((0, 0, 0), (1, 0, 0), -90),color=cq.Color("Red"))
+        final.add(dvs.translate((0, 0, -3300 / 2)).rotate((0, 0, 0), (1, 0, 0), -90),color=cq.Color("Green"))
+        final.add(wires.translate((0, 0, -3300 / 2)).rotate((0, 0, 0), (1, 0, 0), -90),color=cq.Color("Blue"))   
+        exportAssembly(final, 'output/final_model.step')
+        #cq.exporters.export(final, 'output/final_model.step')
+        #.rotate((0, 0, 0), (1, 0, 0), -90)
 
     #Export HTML of Plotly
     #fig.write_html("6-building_layout.html")

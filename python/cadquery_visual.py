@@ -10,7 +10,6 @@ def cut_cad_doors(data):
             boundary = dr['Boundary']
             mid_point = dr['Point']
             height = abs(boundary[2]["Z"] - boundary[0]["Z"])
-            print(height)
             mid_x, mid_y, mid_z = mid_point["X"], mid_point["Y"], mid_point["Z"] - ((3300 - height)/ 2)
              # Determine orientation
             rotation_angle = 0
@@ -71,9 +70,8 @@ def get_cad_walls(data):
 
 def add_paths(obj, gc, paths):
     for i in range(len(paths)):
-        if not paths[i]:  # ✅ Skip empty paths
+        if not paths[i]:  
             continue
-        print(paths[i])
         points = [gc.vertex(v) for v in paths[i]]  # Get the 3D points from vertices
         cq_points = [cq.Vector(p.x, p.y, p.z) for p in points]  # Convert to CadQuery vectors
         
@@ -84,4 +82,25 @@ def add_paths(obj, gc, paths):
             obj = wire
     
     return obj
+
+def add_jbs(junction_boxes):
+    jb_size = (200, 200, 100)  
+    jbs = cq.Workplane()
+    for junction_box in junction_boxes:
+        jb = cq.Workplane("XY").box(*jb_size)
+        jb = jb.translate((junction_box.location.x, junction_box.location.y, junction_box.location.z))
+        jbs.add(jb)
+    
+    return jbs  # Return the updated assembly
+
+def add_dvs(junction_boxes):
+    jb_size = (50, 20, 80)  
+    jbs = cq.Workplane()
+    for junction_box in junction_boxes:
+        jb = cq.Workplane("XY").box(*jb_size)
+        jb = jb.translate((junction_box.location.x, junction_box.location.y, junction_box.location.z))
+        jbs.add(jb)
+    
+    return jbs  # Return the updated assembly
+    
      
