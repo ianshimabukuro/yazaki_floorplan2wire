@@ -138,7 +138,7 @@ if __name__ == '__main__':
         psb_box = psb_box.translate((PSB.location.x, PSB.location.y, PSB.location.z))
         final = cq.Assembly()
         final.add(psb_box.translate((0, 0, -3300 / 2)).rotate((0, 0, 0), (1, 0, 0), -90), color=cq.Color('Red'))
-        final.add(all_walls.rotate((0, 0, 0), (1, 0, 0), -90),color=cq.Color(1.0, 0.96, 0.9, 0.9))
+        final.add(all_walls.rotate((0, 0, 0), (1, 0, 0), -90),color=cq.Color(1, 1, 1, 0.85))
         final.add(jbs.translate((0, 0, -3300 / 2)).rotate((0, 0, 0), (1, 0, 0), -90),color=cq.Color("Red"))
         final.add(dvs.translate((0, 0, -3300 / 2)).rotate((0, 0, 0), (1, 0, 0), -90),color=cq.Color("Green"))
         final.add(wires.translate((0, 0, -3300 / 2)).rotate((0, 0, 0), (1, 0, 0), -90),color=cq.Color("Blue"))   

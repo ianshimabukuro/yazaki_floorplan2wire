@@ -58,6 +58,7 @@ RUN curl -SL -o git-installer.exe https://github.com/git-for-windows/git/release
 WORKDIR C:\app
 
 COPY src/ C:/app/src/
+COPY data/ C:/app/data/
 COPY CMakeLists.txt C:/app/
 COPY dependency/ C:/app/dependency/
 COPY cmake/ C:/app/cmake/
@@ -82,4 +83,4 @@ RUN pip install --no-cache-dir --no-deps matplotlib==3.10.0 nlopt==2.9.0 nptypin
 RUN pip install --no-cache-dir -r requirements.txt
 
 # Set entry point to Python scripts (default: realworld.py)
-CMD ["python"]
+CMD ["cmd"]

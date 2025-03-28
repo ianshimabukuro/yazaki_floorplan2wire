@@ -1,0 +1,23 @@
+# escape=`
+
+# Use Windows Server Core with Python pre-installed
+FROM python:3.13.1-windowsservercore
+
+# Set working directory
+WORKDIR C:/app
+
+# Copy only necessary files for running the application
+COPY data/ C:/app/data/
+COPY python/ C:/app/python/
+COPY output/ C:/app/output/
+COPY requirements.txt .
+COPY cadquery /app/cadquery
+
+# Install dependencies while ensuring no unnecessary re-installation
+RUN pip install --no-cache-dir -r requirements.txt
+
+# Ensure Windows Long Path Support is enabled (useful for some Python packages)
+RUN reg add HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Control\FileSystem /v LongPathsEnabled /t REG_DWORD /d 1 /f
+
+# Set entry point to open a command prompt inside the container
+CMD ["cmd"]

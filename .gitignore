@@ -3,7 +3,7 @@ bin/
 *.exp 
 *.lib
 *.pyd
-
+cadquery/
 python/EWDpy.py
 python/__pycache__/
 python/*.exe
